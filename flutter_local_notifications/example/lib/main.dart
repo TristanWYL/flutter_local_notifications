@@ -106,6 +106,55 @@ class _HomePageState extends State<HomePage> {
     _requestIOSPermissions();
     _configureDidReceiveLocalNotificationSubject();
     _configureSelectNotificationSubject();
+    notificationDailyTest();
+  }
+
+  Future<void> notificationDailyTest() async {
+    await _cancelAllNotifications();
+    int _idNotification = 0;
+    DateTime _dt = DateTime(2000,1,1,15,46,0);
+    for (var i = 0; i < 24*4; i++) {
+      _idNotification++;
+      _dt = _dt.add(Duration(minutes: 1));
+      print("Notification ID: $_idNotification Time Setting: ${_dt.hour}:${_dt.minute}:${_dt.second}");
+      await _myShowDailyAtTime(
+          time: Time(_dt.hour, _dt.minute, _dt.second),
+          id: _idNotification,
+          title: "TESTING TITLE",
+          body: "TESTING BODY",
+//            title: AppLocalizations.of(context).surveyMorning,
+//            body: AppLocalizations.of(context).surveyMorningDesc.replaceFirst(
+//                "@number", Global().qNumOfFirstSession.length.toString()),
+          payload: "good morning");
+    }
+  }
+
+  Future<void> _myShowDailyAtTime(
+      {@required Time time,
+        @required int id,
+        @required String title,
+        @required String body,
+        @required String payload}) async {
+    // var time = Time(10, 0, 0);
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'repeatDailyAtTime channel id',
+      'repeatDailyAtTime channel name',
+      'repeatDailyAtTime description',
+      sound: RawResourceAndroidNotificationSound('slow_spring_board'),
+    );
+    var iOSPlatformChannelSpecifics = IOSNotificationDetails(
+        sound: "slow_spring_board.aiff"
+    );
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    // debugPrint('Debug: Notification: $title, ${time.hour}:${time.minute}:${time.second}');
+    await flutterLocalNotificationsPlugin.showDailyAtTime(
+        id,
+        title,
+        body, //'Please take your experience at approximately ${_toTwoDigitString(time.hour)}:${_toTwoDigitString(time.minute)}:${_toTwoDigitString(time.second)}',
+        time,
+        platformChannelSpecifics,
+        payload: payload);
   }
 
   void _requestIOSPermissions() {
